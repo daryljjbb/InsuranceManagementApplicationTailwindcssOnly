@@ -7,19 +7,21 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import DashboardCards from "./DashboardCards";
+import { Outlet , NavLink} from "react-router-dom"; // for nested routing
+
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile
   const [collapsed, setCollapsed] = useState(false); // desktop mini-sidebar
   const [profileOpen, setProfileOpen] = useState(false);
 
-  const menuItems = [
-    { name: "Dashboard", icon: <Home size={20} /> },
-    { name: "Reports", icon: <BarChart2 size={20} /> },
-    { name: "Customers", icon: <Users size={20} /> },
-    { name: "Settings", icon: <Settings size={20} /> },
-  ];
+ const menuItems = [
+  { name: "Dashboard", icon: <Home size={20} />, path: "/" },
+  { name: "Reports", icon: <BarChart2 size={20} />, path: "/reports" },
+  { name: "Customers", icon: <Users size={20} />, path: "/customers" },
+  { name: "Settings", icon: <Settings size={20} />, path: "/settings" },
+];
+
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -48,14 +50,18 @@ export default function Layout() {
         <nav className="p-4 space-y-2">
           {menuItems.map((item) => (
             <div key={item.name} className="relative group">
-              <a
-                href="#"
-                className={`flex items-center px-3 py-2 rounded hover:bg-gray-200 transition-all
-                  ${collapsed ? "justify-center" : "space-x-3"}`}
-              >
+             <NavLink
+                to={item.path}
+                className={({ isActive }) =>
+                    `flex items-center px-3 py-2 rounded hover:bg-gray-200 transition-all
+                    ${collapsed ? "justify-center" : "space-x-3"}
+                    ${isActive ? "bg-gray-200 font-semibold" : ""}`
+                }
+                >
                 {item.icon}
                 {!collapsed && <span>{item.name}</span>}
-              </a>
+            </NavLink>
+
 
               {/* Floating Tooltip */}
               {collapsed && (
@@ -130,12 +136,9 @@ export default function Layout() {
             )}
           </div>
         </header>
-
-        {/* CONTENT AREA */}
-        <main className="p-6">
-          <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-          <p>Welcome to your dashboard layout!</p>
-          <DashboardCards />
+             {/* Main content */}
+        <main className="flex-1 p-6">
+            <Outlet />   {/* This renders DashboardPage */}
         </main>
       </div>
     </div>
