@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 
-export default function ReportFilters({ filters, setFilters }) {
+export default function ReportFilter({ filters, setFilters, dropdowns = [] }) {
   return (
     <div className="bg-white p-4 rounded-lg shadow flex flex-wrap items-end gap-4">
 
@@ -42,12 +42,33 @@ export default function ReportFilters({ filters, setFilters }) {
         />
       </div>
 
+      {/* Dynamic Dropdowns */}
+      {dropdowns.map((dd) => (
+        <div key={dd.key} className="flex flex-col">
+          <label className="text-sm text-gray-600">{dd.label}</label>
+          <select
+            className="border rounded-lg px-3 py-2 w-40"
+            value={filters[dd.key]}
+            onChange={(e) => setFilters({ ...filters, [dd.key]: e.target.value })}
+          >
+            <option value="">All</option>
+            {dd.options.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      ))}
+
       {/* Clear Button */}
       <button
         className="ml-auto px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
-        onClick={() =>
-          setFilters({ search: "", startDate: "", endDate: "" })
-        }
+        onClick={() => {
+          const cleared = { search: "", startDate: "", endDate: "" };
+          dropdowns.forEach((dd) => (cleared[dd.key] = ""));
+          setFilters(cleared);
+        }}
       >
         Clear
       </button>

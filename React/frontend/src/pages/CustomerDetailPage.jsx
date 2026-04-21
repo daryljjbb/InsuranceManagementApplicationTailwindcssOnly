@@ -4,20 +4,16 @@ import { OverviewTab } from "../components/customer/OverviewTab";
 import { PoliciesTab } from "../components/customer/PoliciesTab";
 import { InvoicesTab } from "../components/customer/InvoicesTab";
 import EditCustomerModal from "../components/customer/EditCustomerModal";
+import useCustomers from "../hooks/useCustomers";
 import Breadcrumbs from "../components/navigation/Breadcrumbs";
+import useCustomer from "../hooks/useCustomer";
+
 
 export default function CustomerDetailPage() {
   const { id } = useParams();
+  const { customer, loading } = useCustomer(id);
 
-  // Hardcoded for now — replace with Django API later
-  const customer = {
-    id,
-    name: "John Doe",
-    email: "john@example.com",
-    phone: "555-1234",
-    status: "Active",
-    created_at: "2024-01-10",
-  };
+ 
 
   const [activeTab, setActiveTab] = useState("overview");
   const [editOpen, setEditOpen] = useState(false);
@@ -28,20 +24,33 @@ export default function CustomerDetailPage() {
     { key: "invoices", label: "Invoices" },
   ];
 
+  if (!customer) {
+  return (
+    <div className="p-6 text-gray-600">
+      Loading customer details…
+    </div>
+  );
+}
+
+
   return (
     <div className="space-y-6">
         <Breadcrumbs
         items={[
             { label: "Dashboard", to: "/" },
             { label: "Customers", to: "/customers" },
-            { label: customer.name } // current page, no link
+            { label: `${customer.first_name} ${customer.last_name}` }
         ]}
         />
+
 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">{customer.name}</h1>
+          <h1 className="text-3xl font-bold">
+            {customer.first_name} {customer.last_name}
+          </h1>
+
           <p className="text-gray-600">Customer ID: {customer.id}</p>
         </div>
 

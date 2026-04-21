@@ -8,12 +8,15 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Outlet , NavLink} from "react-router-dom"; // for nested routing
+import { logoutUser } from "../api/auth";
+import { useNavigate } from "react-router-dom";
 
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile
   const [collapsed, setCollapsed] = useState(false); // desktop mini-sidebar
   const [profileOpen, setProfileOpen] = useState(false);
+    const navigate = useNavigate();
 
  const menuItems = [
   { name: "Dashboard", icon: <Home size={20} />, path: "/" },
@@ -22,6 +25,15 @@ export default function Layout() {
   { name: "Settings", icon: <Settings size={20} />, path: "/settings" },
 ];
 
+const handleLogout = async () => {
+  try {
+    await logoutUser();          // Django clears session
+    navigate("/login");          // Redirect to login
+    window.location.reload();    // Reset auth state
+  } catch (err) {
+    console.error("Logout failed:", err);
+  }
+};
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -128,12 +140,30 @@ export default function Layout() {
             </button>
 
             {profileOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg">
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100 text-gray-700">Profile</a>
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100 text-gray-700">Settings</a>
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100 text-gray-700">Sign Out</a>
-              </div>
+            <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg">
+                <button
+                onClick={() => navigate("/profile")}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
+                >
+                Profile
+                </button>
+
+                <button
+                onClick={() => navigate("/settings")}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
+                >
+                Settings
+                </button>
+
+                <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
+                >
+                Sign Out
+                </button>
+            </div>
             )}
+
           </div>
         </header>
              {/* Main content */}
