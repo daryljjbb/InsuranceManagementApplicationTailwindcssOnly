@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { ArrowUpDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function CustomerTable({ customers, search }) {
+  const navigate = useNavigate();
+
   const [sortField, setSortField] = useState("name");
   const [sortDir, setSortDir] = useState("asc");
 
@@ -48,7 +51,11 @@ export default function CustomerTable({ customers, search }) {
 
         <tbody>
           {sorted.map((c) => (
-            <tr key={c.id} className="border-b hover:bg-gray-50 transition">
+            <tr
+              key={c.id}
+              onClick={() => navigate(`/customers/${c.id}`)}
+              className="border-b hover:bg-blue-50 transition cursor-pointer"
+            >
               <td
                 className="px-6 py-3"
                 dangerouslySetInnerHTML={{ __html: highlight(c.name) }}
@@ -79,3 +86,4 @@ export default function CustomerTable({ customers, search }) {
     </div>
   );
 }
+
