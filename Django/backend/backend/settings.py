@@ -25,7 +25,37 @@ SECRET_KEY = 'django-insecure-b=lbziz+4_bxv))t)))$eyci&n%g44c^l^20h9nx^#-1ax*-l^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Add '*' to allow any host to access your backend while testing
+# 1. Allow the backend to run on Render's servers
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+
+# 2. Allow your GitHub Pages site to talk to this backend
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost",
+    "http://localhost:3000",
+    "http://127.0.0.1",
+    "http://127.0.0.1:3000",
+    "https://daryljjbb.github.io",
+]
+
+# For modern Django security, also add this:
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost",
+    "http://localhost:3000",
+    "http://127.0.0.1",
+    "http://127.0.0.1:3000",
+    "https://daryljjbb.github.io",
+]
+
+# ✅ This line is REQUIRED when using fetch(..., { credentials: 'include' })
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SAMESITE = "Lax"
+
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+
 
 
 # Application definition
@@ -40,6 +70,7 @@ INSTALLED_APPS = [
     'my_app',
     'rest_framework',
     'corsheaders',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
