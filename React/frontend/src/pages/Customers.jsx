@@ -1,20 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CustomerSearch from "../components/CustomerSearch";
 import CustomerTable from "../components/CustomerTable";
+import useDebounce from "../hooks/useDebounce";
 
 export default function Customers() {
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
 
-  const customers = [
+  // Hardcoded for now — replace with Django API later
+  const [customers, setCustomers] = useState([
     { id: 1, name: "John Doe", email: "john@example.com", phone: "555-1234", status: "Active" },
     { id: 2, name: "Jane Smith", email: "jane@example.com", phone: "555-9876", status: "Inactive" },
     { id: 3, name: "Mike Johnson", email: "mike@example.com", phone: "555-4567", status: "Active" },
-  ];
+  ]);
 
+  // Filter logic
   const filtered = customers.filter((c) =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.email.toLowerCase().includes(search.toLowerCase()) ||
-    c.phone.includes(search)
+    [c.name, c.email, c.phone]
+      .join(" ")
+      .toLowerCase()
+      .includes(debouncedSearch.toLowerCase())
   );
 
   return (
@@ -23,7 +28,7 @@ export default function Customers() {
 
       <CustomerSearch search={search} setSearch={setSearch} />
 
-      <CustomerTable customers={filtered} />
+      <CustomerTable customers={filtered} search={debouncedSearch} />
     </div>
   );
 }

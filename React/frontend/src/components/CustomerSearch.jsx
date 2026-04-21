@@ -22,3 +22,4 @@ export default function CustomerSearch({ search, setSearch }) {
     </div>
   );
 }
+
