@@ -5,6 +5,8 @@ import Breadcrumbs from "../components/Breadcrumbs";
 import Tabs from "../components/ui/Tabs";
 import { useSearchParams } from "react-router-dom";
 import { Home, Users, User, FileText } from "lucide-react";
+import EditCustomerModal from "../components/EditCustomerModal";
+import DeleteCustomerModal from "../components/DeleteCustomerModal";
 
 
 
@@ -18,6 +20,10 @@ export default function CustomerDetailPage() {
   const [error, setError] = useState("");
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "overview";
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+
 
   const tabLabels = {
   overview: "Overview",
@@ -27,26 +33,30 @@ export default function CustomerDetailPage() {
 
 
 
+
   // -----------------------------
   // Load Customer
   // -----------------------------
-  useEffect(() => {
-    const loadCustomer = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:8000/api/customers/${id}/`
-        );
-        setCustomer(response.data);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load customer");
-      } finally {
-        setLoading(false);
-      }
-    };
+ // -----------------------------
+// Load Single Customer
+// -----------------------------
+const loadCustomer = async () => {
+  try {
+    const response = await axios.get(
+      `http://localhost:8000/api/customers/${id}/`
+    );
+    setCustomer(response.data);
+  } catch (err) {
+    console.error(err);
+    setError("Failed to load customer");
+  } finally {
+    setLoading(false);
+  }
+};
 
-    loadCustomer();
-  }, [id]);
+useEffect(() => {
+  loadCustomer();
+}, [id]);
 
   // -----------------------------
   // Load Policies
@@ -65,6 +75,16 @@ export default function CustomerDetailPage() {
 
     loadPolicies();
   }, [id]);
+
+  const updateCustomer = async (updatedData) => {
+  await axios.put(`http://localhost:8000/api/customers/${id}/`, updatedData);
+  loadCustomer(); // refresh detail page
+};
+
+const deleteCustomer = async () => {
+  await axios.delete(`http://localhost:8000/api/customers/${id}/`);
+  navigate("/customers"); // redirect after delete
+};
 
   // -----------------------------
   // Loading / Error States
@@ -113,6 +133,18 @@ export default function CustomerDetailPage() {
             label: "Overview",
             content: (
               <div className="space-y-2 text-gray-700">
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Edit Customer
+                </button>
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Delete Customer
+                </button>
                 <p><strong>Email:</strong> {customer.email}</p>
                 <p><strong>Phone:</strong> {customer.phone}</p>
                 <p><strong>Address:</strong> {customer.address}</p>
@@ -161,6 +193,21 @@ export default function CustomerDetailPage() {
           },
         ]}
       />
+      {showEditModal && (
+          <EditCustomerModal
+            customer={customer}
+            onClose={() => setShowEditModal(false)}
+            onSave={updateCustomer}
+          />
+        )}
+      {showDeleteModal && (
+        <DeleteCustomerModal
+          customer={customer}
+          onClose={() => setShowDeleteModal(false)}
+          onDelete={deleteCustomer}
+        />
+      )}
+
     </div>
   );
 }
