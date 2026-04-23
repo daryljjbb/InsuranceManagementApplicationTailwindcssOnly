@@ -7,6 +7,8 @@ import { useSearchParams } from "react-router-dom";
 import { Home, Users, User, FileText } from "lucide-react";
 import EditCustomerModal from "../components/EditCustomerModal";
 import DeleteCustomerModal from "../components/DeleteCustomerModal";
+import DeletePolicyModal from "../components/DeletePolicyModal";
+import EditPolicyModal from "../components/EditPolicyModal";
 
 
 
@@ -22,6 +24,14 @@ export default function CustomerDetailPage() {
   const activeTab = searchParams.get("tab") || "overview";
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const [showDeletePolicyModal, setShowDeletePolicyModal] = useState(false);
+  const [selectedPolicy, setSelectedPolicy] = useState(null);
+  const [showEditPolicyModal, setShowEditPolicyModal] = useState(false);
+
+
+
+
 
 
 
@@ -85,6 +95,22 @@ const deleteCustomer = async () => {
   await axios.delete(`http://localhost:8000/api/customers/${id}/`);
   navigate("/customers"); // redirect after delete
 };
+
+const deletePolicy = async () => {
+  await axios.delete(`http://localhost:8000/api/policies/${selectedPolicy.id}/`);
+  setShowDeletePolicyModal(false);
+  loadCustomer(); // refresh policies list
+};
+
+const updatePolicy = async (updatedData) => {
+  await axios.put(
+    `http://localhost:8000/api/policies/${selectedPolicy.id}/`,
+    updatedData
+  );
+  loadCustomer(); // refresh policies
+};
+
+
 
   // -----------------------------
   // Loading / Error States
@@ -156,7 +182,7 @@ const deleteCustomer = async () => {
             key: "policies",
             label: "Policies",
             content: (
-              <div className="space-y-3">
+              <div className="space-y-3">               
                 {policies.length === 0 ? (
                   <p className="text-gray-600">No policies found.</p>
                 ) : (
@@ -175,6 +201,21 @@ const deleteCustomer = async () => {
                         <div className="text-gray-600 text-sm">
                           Expires: {pol.expiration_date}
                         </div>
+                         <button
+                          onClick={() => {
+                            setSelectedPolicy(pol);
+                            setShowEditPolicyModal(true);
+                          }}
+                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                        >
+                          Edit
+                        </button>
+                        <button
+                        onClick={() => setShowDeletePolicyModal(true)}
+                        className="px-3 py-2 bg-red-600 text-white rounded hover:bg-blue-700"
+                      >
+                        Delete Policy
+                      </button>
                       </li>
                     ))}
                   </ul>
@@ -207,6 +248,21 @@ const deleteCustomer = async () => {
           onDelete={deleteCustomer}
         />
       )}
+      {showDeleteModal && (
+          <DeletePolicyModal
+            policy={selectedPolicy}
+            onClose={() => setShowDeleteModal(false)}
+            onDelete={deletePolicy}
+          />
+      )}
+      {showEditPolicyModal && (
+        <EditPolicyModal
+          policy={selectedPolicy}
+          onClose={() => setShowEditPolicyModal(false)}
+          onSave={updatePolicy}
+        />
+      )}
+
 
     </div>
   );
