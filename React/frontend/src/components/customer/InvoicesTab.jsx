@@ -1,4 +1,4 @@
-export function InvoicesTab() {
+export default function InvoicesTab() {
   const invoices = [
     { id: 1, amount: "$120.00", date: "2024-02-01", status: "Paid" },
     { id: 2, amount: "$89.00", date: "2024-03-01", status: "Unpaid" },

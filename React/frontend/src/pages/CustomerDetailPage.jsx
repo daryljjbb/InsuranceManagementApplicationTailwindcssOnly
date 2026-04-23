@@ -1,120 +1,166 @@
-import { useParams } from "react-router-dom";
-import { useState } from "react";
-import { OverviewTab } from "../components/customer/OverviewTab";
-import { PoliciesTab } from "../components/customer/PoliciesTab";
-import { InvoicesTab } from "../components/customer/InvoicesTab";
-import EditCustomerModal from "../components/customer/EditCustomerModal";
-import useCustomers from "../hooks/useCustomers";
-import Breadcrumbs from "../components/navigation/Breadcrumbs";
-import useCustomer from "../hooks/useCustomer";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import Breadcrumbs from "../components/Breadcrumbs";
+import Tabs from "../components/ui/Tabs";
+import { useSearchParams } from "react-router-dom";
+import { Home, Users, User, FileText } from "lucide-react";
+
 
 
 export default function CustomerDetailPage() {
   const { id } = useParams();
-  const { customer, loading } = useCustomer(id);
+  const navigate = useNavigate();
 
- 
+  const [customer, setCustomer] = useState(null);
+  const [policies, setPolicies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [searchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "overview";
 
-  const [activeTab, setActiveTab] = useState("overview");
-  const [editOpen, setEditOpen] = useState(false);
+  const tabLabels = {
+  overview: "Overview",
+  policies: "Policies",
+  notes: "Notes",
+};
 
-  const tabs = [
-    { key: "overview", label: "Overview" },
-    { key: "policies", label: "Policies" },
-    { key: "invoices", label: "Invoices" },
-  ];
 
-  if (!customer) {
+
+  // -----------------------------
+  // Load Customer
+  // -----------------------------
+  useEffect(() => {
+    const loadCustomer = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/api/customers/${id}/`
+        );
+        setCustomer(response.data);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load customer");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCustomer();
+  }, [id]);
+
+  // -----------------------------
+  // Load Policies
+  // -----------------------------
+  useEffect(() => {
+    const loadPolicies = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/api/customers/${id}/policies/`
+        );
+        setPolicies(response.data);
+      } catch (err) {
+        console.error("Failed to load policies", err);
+      }
+    };
+
+    loadPolicies();
+  }, [id]);
+
+  // -----------------------------
+  // Loading / Error States
+  // -----------------------------
+  if (loading) return <div className="text-gray-600">Loading customer...</div>;
+  if (error) return <div className="text-red-600">{error}</div>;
+  if (!customer) return <div>No customer found.</div>;
+
+  // -----------------------------
+  // Render
+  // -----------------------------
   return (
-    <div className="p-6 text-gray-600">
-      Loading customer details…
-    </div>
-  );
-}
+    <div className="bg-white shadow rounded p-6">
+
+      {/* Breadcrumbs */}
+     <Breadcrumbs
+      items={[
+        { label: "Dashboard", to: "/", icon: Home },
+        { label: "Customers", to: "/customers", icon: Users },
+        { label: `${customer.first_name} ${customer.last_name}`, to: `/customers/${id}`, icon: User },
+        { label: tabLabels[activeTab], icon: FileText, active: true } // ⭐ highlight this one
+      ]}
+    />
 
 
-  return (
-    <div className="space-y-6">
-        <Breadcrumbs
-        items={[
-            { label: "Dashboard", to: "/" },
-            { label: "Customers", to: "/customers" },
-            { label: `${customer.first_name} ${customer.last_name}` }
-        ]}
-        />
 
+
+      {/* Back Button */}
+      <button
+        onClick={() => navigate("/customers")}
+        className="mb-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded shadow-sm transition"
+      >
+        ← Back to Customers
+      </button>
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">
-            {customer.first_name} {customer.last_name}
-          </h1>
-
-          <p className="text-gray-600">Customer ID: {customer.id}</p>
-        </div>
-
-        <span
-          className={`px-4 py-2 rounded-full text-sm font-medium
-            ${customer.status === "Active"
-              ? "bg-green-100 text-green-700"
-              : "bg-red-100 text-red-700"}
-          `}
-        >
-          {customer.status}
-        </span>
-        <button
-            onClick={() => setEditOpen(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-            Edit Customer
-        </button>
-
-      </div>
+      <h2 className="text-2xl font-bold mb-4">
+        {customer.first_name} {customer.last_name}
+      </h2>
 
       {/* Tabs */}
-      <div className="border-b flex space-x-8">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`pb-3 text-lg font-medium relative
-              ${activeTab === tab.key ? "text-blue-600" : "text-gray-600"}
-            `}
-          >
-            {tab.label}
-
-            {activeTab === tab.key && (
-              <span className="absolute left-0 right-0 -bottom-[1px] h-[3px] bg-blue-600 rounded-full"></span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab Content */}
-      {activeTab === "overview" && (
-        <OverviewTab customer={customer} />
-      )}
-
-      {activeTab === "policies" && (
-        <PoliciesTab />
-      )}
-
-      {activeTab === "invoices" && (
-        <InvoicesTab />
-      )}
-      {editOpen && (
-        <EditCustomerModal
-            customer={customer}
-            onClose={() => setEditOpen(false)}
-            onSave={(updated) => {
-            console.log("Updated customer:", updated);
-            setEditOpen(false);
-            }}
-        />
-     )}
-
+      <Tabs
+        tabs={[
+          {
+            key: "overview",
+            label: "Overview",
+            content: (
+              <div className="space-y-2 text-gray-700">
+                <p><strong>Email:</strong> {customer.email}</p>
+                <p><strong>Phone:</strong> {customer.phone}</p>
+                <p><strong>Address:</strong> {customer.address}</p>
+                <p><strong>Notes:</strong> {customer.notes || "No notes"}</p>
+              </div>
+            ),
+          },
+          {
+            key: "policies",
+            label: "Policies",
+            content: (
+              <div className="space-y-3">
+                {policies.length === 0 ? (
+                  <p className="text-gray-600">No policies found.</p>
+                ) : (
+                  <ul className="divide-y divide-gray-200">
+                    {policies.map((pol) => (
+                      <li key={pol.id} className="py-3">
+                        <div className="font-semibold">
+                          {pol.policy_type} — #{pol.policy_number}
+                        </div>
+                        <div className="text-gray-600 text-sm">
+                          Premium: ${pol.premium_amount}
+                        </div>
+                        <div className="text-gray-600 text-sm">
+                          Effective: {pol.effective_date}
+                        </div>
+                        <div className="text-gray-600 text-sm">
+                          Expires: {pol.expiration_date}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ),
+          },
+          {
+            key: "notes",
+            label: "Notes",
+            content: (
+              <div className="text-gray-700">
+                <p>Notes editor coming soon.</p>
+              </div>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }
-

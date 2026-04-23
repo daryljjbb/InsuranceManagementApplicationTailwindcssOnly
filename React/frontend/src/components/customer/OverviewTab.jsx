@@ -1,63 +1,79 @@
-export function OverviewTab({ customer }) {
+export default function OverviewTab({ customer }) {
   return (
-    <div className="bg-white shadow rounded-lg p-6 space-y-4">
+    <div className="bg-white shadow rounded-xl p-6 space-y-8">
 
-    <h2 className="text-xl font-semibold mb-4">Customer Overview</h2>
+      {/* Section: Basic Info */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
 
-    <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <div>
-        <p className="text-gray-500 text-sm">Full Name</p>
-        <p className="text-gray-900 font-medium">
+          <InfoBlock label="Full Name">
             {customer.first_name} {customer.last_name}
-        </p>
-        </div>
+          </InfoBlock>
 
-        <div>
-        <p className="text-gray-500 text-sm">Email</p>
-        <p className="text-gray-900 font-medium">{customer.email}</p>
-        </div>
+          <InfoBlock label="Status">
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-medium
+                ${customer.status === "active" ? "bg-green-100 text-green-700" : ""}
+                ${customer.status === "inactive" ? "bg-red-100 text-red-700" : ""}
+                ${customer.status === "lead" ? "bg-blue-100 text-blue-700" : ""}
+              `}
+            >
+              {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
+            </span>
+          </InfoBlock>
 
-        <div>
-        <p className="text-gray-500 text-sm">Phone</p>
-        <p className="text-gray-900 font-medium">{customer.phone}</p>
-        </div>
+          <InfoBlock label="Email">{customer.email}</InfoBlock>
+          <InfoBlock label="Phone">{customer.phone}</InfoBlock>
 
-        <div>
-        <p className="text-gray-500 text-sm">Status</p>
-        <span
-            className={`px-3 py-1 rounded-full text-sm font-medium
-            ${customer.status === "active" ? "bg-green-100 text-green-700" : ""}
-            ${customer.status === "inactive" ? "bg-red-100 text-red-700" : ""}
-            ${customer.status === "lead" ? "bg-blue-100 text-blue-700" : ""}
-            `}
-        >
-            {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
-        </span>
-        </div>
+          <InfoBlock label="Gender">{customer.gender || "—"}</InfoBlock>
+          <InfoBlock label="Date of Birth">{customer.date_of_birth || "—"}</InfoBlock>
 
-        <div>
-        <p className="text-gray-500 text-sm">Gender</p>
-        <p className="text-gray-900 font-medium">{customer.gender}</p>
         </div>
+      </div>
 
-        <div>
-        <p className="text-gray-500 text-sm">Date of Birth</p>
-        <p className="text-gray-900 font-medium">{customer.date_of_birth}</p>
-        </div>
+      <hr className="border-gray-200" />
 
-        <div className="col-span-2">
-        <p className="text-gray-500 text-sm">Address</p>
-        <p className="text-gray-900 font-medium">
-            {customer.address1}
-            {customer.address2 ? `, ${customer.address2}` : ""}
-            <br />
-            {customer.city}, {customer.state} {customer.zip_code}
-        </p>
+      {/* Section: Address */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Address</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <InfoBlock label="Address Line 1">{customer.address1}</InfoBlock>
+          <InfoBlock label="Address Line 2">{customer.address2 || "—"}</InfoBlock>
+
+          <InfoBlock label="City">{customer.city}</InfoBlock>
+          <InfoBlock label="State">{customer.state}</InfoBlock>
+          <InfoBlock label="ZIP Code">{customer.zip_code}</InfoBlock>
+
         </div>
+      </div>
+
+      <hr className="border-gray-200" />
+
+      {/* Section: Metadata */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Account Metadata</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InfoBlock label="Customer ID">{customer.id}</InfoBlock>
+          <InfoBlock label="Created At">{customer.created_at || "—"}</InfoBlock>
+          <InfoBlock label="Updated At">{customer.updated_at || "—"}</InfoBlock>
+        </div>
+      </div>
 
     </div>
-</div>
+  );
+}
 
+/* Reusable info block component */
+function InfoBlock({ label, children }) {
+  return (
+    <div className="space-y-1">
+      <p className="text-sm text-gray-500">{label}</p>
+      <p className="text-gray-900 font-medium">{children}</p>
+    </div>
   );
 }
