@@ -15,6 +15,11 @@ router = DefaultRouter()
 urlpatterns = [
     path('customers/', views.CustomerListCreateView.as_view()),
     path('customers/<int:pk>/', views.CustomerDetailView.as_view()),
+    path("customers/<int:customer_id>/policies/", views.customer_policies),
+
+
+    path("customers/<int:pk>/notes/", views.update_customer_notes),
+
 
 
     path('login/', views.api_login, name='api_login'),

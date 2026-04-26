@@ -18,6 +18,8 @@ class Customer(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True) 
+    notes = models.TextField(blank=True, null=True)
 
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -45,3 +47,57 @@ class Customer(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+
+
+
+class Policy(models.Model):
+
+    POLICY_AUTO = "auto"
+    POLICY_HOME = "home"
+    POLICY_LIFE = "life"
+
+    POLICY_TYPES = [
+        (POLICY_AUTO, "Auto Insurance"),
+        (POLICY_HOME, "Home Insurance"),
+        (POLICY_LIFE, "Life Insurance"),
+    ]
+
+    customer = models.ForeignKey(
+        Customer,
+        related_name="policies",
+        on_delete=models.CASCADE
+    )
+
+    policy_number = models.CharField(max_length=255, unique=True)
+    policy_type = models.CharField(max_length=20, choices=POLICY_TYPES)
+
+    effective_date = models.DateField()
+    expiration_date = models.DateField()
+    premium_amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    carrier = models.CharField(max_length=255, blank=True, null=True)
+    coverage_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+     # AUTO
+    vehicle_make = models.CharField(max_length=255, blank=True, null=True)
+    vehicle_model = models.CharField(max_length=255, blank=True, null=True)
+    vehicle_year = models.CharField(max_length=4, blank=True, null=True)
+    vin = models.CharField(max_length=50, blank=True, null=True)
+
+    # HOME
+    property_address = models.CharField(max_length=255, blank=True, null=True)
+    property_value = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+
+    # LIFE
+    beneficiary_name = models.CharField(max_length=255, blank=True, null=True)
+    coverage_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.policy_number} ({self.get_policy_type_display()})"

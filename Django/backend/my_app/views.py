@@ -6,16 +6,18 @@ from rest_framework import filters # 1. Make sure this is imported
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models.functions import TruncMonth
 from django.db.models import Sum
-from .models import Customer
+from .models import Customer, Policy
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.decorators import api_view, permission_classes
-from .serializers import CustomerSerializer
+from .serializers import CustomerSerializer, PolicySerializer
 from rest_framework import viewsets
 from datetime import timedelta
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
+
 
 
 # Create your views here.
@@ -24,61 +26,32 @@ from django.utils import timezone
 # Customer ViewSet
 # -------------------------------
 class CustomerListCreateView(generics.ListCreateAPIView):
+    queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
-    # Note: We don't need 'queryset = Customer.objects.all()' anymore 
-    # because get_queryset handles everything.
 
-    def get_queryset(self):
-        user = self.request.user
-        
-        # 1. If user is logged in and is Staff/Admin, show everything
-        if user.is_authenticated and user.is_staff:
-            return Customer.objects.all()
-        
-        # 2. If user is a regular logged-in user (like Daryl), show only their own
-        if user.is_authenticated:
-            return Customer.objects.filter(user=user)
-        # 3. FIX: Changed Invoice.objects.none() to Customer.objects.none()
-        # This ensures guests see an empty list instead of a system error.
-        return Customer.objects.none() 
+    # GET = public, POST = must be logged in
+    permission_classes = [AllowAny]
 
-    def perform_create(self, serializer):
-        # Automatically link the CUSTOMER to whoever is logged in
-        serializer.save(user=self.request.user)
 
-    def get_permissions(self):
-        # POST (Creating) requires a login
-        if self.request.method == "POST":
-            return [permissions.IsAuthenticated()]
-        
-        # GET (Viewing) is allowed for everyone (but guests see an empty list)
-        return [permissions.AllowAny()]
-    
-    # 2. Add filters.SearchFilter to this list
     filter_backends = [
-        DjangoFilterBackend, 
-        filters.SearchFilter, # <--- Add this!
-        filters.OrderingFilter
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
     ]
 
-      # 3. Tell SearchFilter which fields to check when ?search= is in the URL
-    search_fields = ["first_name","last_name", "phone", "email"] 
-    
-    filterset_fields = {
-        "first_name": ["icontains"],                     # optional: search by first name
-        "last_name": ["icontains"],                    # optional: search by last name
-        "email": ["icontains"],                    # optional: search by email
-        "phone": ["icontains"],                    # optional: search by phone
-    }
+    search_fields = ["first_name", "last_name", "email", "phone"]
     ordering_fields = ["first_name", "last_name", "email"]
     ordering = ["first_name"]
+
+    def perform_create(self, serializer):
+        serializer.save(user=User.objects.first())
 
 
 # ✨ NEW Detail View (REQUIRED for /api/customers/1/)
 class CustomerDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 
 @api_view(["GET"])
@@ -155,3 +128,19 @@ def api_register(request):
         user.save()
 
     return Response({"message": "User created successfully"}, status=201)
+
+
+@api_view(["PATCH"])
+def update_customer_notes(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    customer.notes = request.data.get("notes", "")
+    customer.save()
+    return Response({"notes": customer.notes})
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def customer_policies(request, customer_id):
+    policies = Policy.objects.filter(customer_id=customer_id)
+    serializer = PolicySerializer(policies, many=True)
+    return Response(serializer.data)
