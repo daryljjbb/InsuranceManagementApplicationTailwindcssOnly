@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import AddCustomerModal from "../components/AddCustomerModal";
 import EditCustomerModal from "../components/EditCustomerModal";
 import DeleteCustomerModal from "../components/DeleteCustomerModal";
 
@@ -14,6 +15,7 @@ export default function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // -----------------------------
   // Debounce Search
@@ -70,11 +72,23 @@ export default function Customers() {
     loadCustomers();
   };
 
+  const addCustomer = async (data) => {
+  await axios.post("http://localhost:8000/api/customers/", data);
+  loadCustomers();
+};
+
+
   // -----------------------------
   // Render
   // -----------------------------
   return (
     <div className="p-6 bg-white shadow rounded">
+      <button
+        onClick={() => setShowAddModal(true)}
+        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+      >
+        + Add Customer
+      </button>
 
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
@@ -208,6 +222,14 @@ export default function Customers() {
           onDelete={deleteCustomer}
         />
       )}
+
+      {showAddModal && (
+      <AddCustomerModal
+        onClose={() => setShowAddModal(false)}
+        onSave={addCustomer}
+      />
+    )}
+
     </div>
   );
 }

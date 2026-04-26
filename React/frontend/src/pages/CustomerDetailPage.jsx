@@ -7,6 +7,7 @@ import { useSearchParams } from "react-router-dom";
 import { Home, Users, User, FileText } from "lucide-react";
 import EditCustomerModal from "../components/EditCustomerModal";
 import DeleteCustomerModal from "../components/DeleteCustomerModal";
+import AddPolicyModal from "../components/AddPolicyModal";
 import DeletePolicyModal from "../components/DeletePolicyModal";
 import EditPolicyModal from "../components/EditPolicyModal";
 
@@ -28,11 +29,7 @@ export default function CustomerDetailPage() {
   const [showDeletePolicyModal, setShowDeletePolicyModal] = useState(false);
   const [selectedPolicy, setSelectedPolicy] = useState(null);
   const [showEditPolicyModal, setShowEditPolicyModal] = useState(false);
-
-
-
-
-
+  const [showAddPolicyModal, setShowAddPolicyModal] = useState(false);
 
 
   const tabLabels = {
@@ -102,6 +99,15 @@ const deletePolicy = async () => {
   loadCustomer(); // refresh policies list
 };
 
+const addPolicy = async (data) => {
+  await axios.post(
+    `http://localhost:8000/api/customers/${id}/policies/`,
+    data
+  );
+  loadCustomer(); // refresh policies
+};
+
+
 const updatePolicy = async (updatedData) => {
   await axios.put(
     `http://localhost:8000/api/policies/${selectedPolicy.id}/`,
@@ -159,18 +165,6 @@ const updatePolicy = async (updatedData) => {
             label: "Overview",
             content: (
               <div className="space-y-2 text-gray-700">
-                <button
-                  onClick={() => setShowEditModal(true)}
-                  className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Edit Customer
-                </button>
-                <button
-                  onClick={() => setShowDeleteModal(true)}
-                  className="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                >
-                  Delete Customer
-                </button>
                 <p><strong>Email:</strong> {customer.email}</p>
                 <p><strong>Phone:</strong> {customer.phone}</p>
                 <p><strong>Address:</strong> {customer.address}</p>
@@ -182,43 +176,97 @@ const updatePolicy = async (updatedData) => {
             key: "policies",
             label: "Policies",
             content: (
-              <div className="space-y-3">               
+              <div className="space-y-3">
+                <button
+                onClick={() => setShowAddPolicyModal(true)}
+                className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                + Add Policy
+              </button>
+               
                 {policies.length === 0 ? (
                   <p className="text-gray-600">No policies found.</p>
                 ) : (
-                  <ul className="divide-y divide-gray-200">
-                    {policies.map((pol) => (
-                      <li key={pol.id} className="py-3">
-                        <div className="font-semibold">
-                          {pol.policy_type} — #{pol.policy_number}
-                        </div>
-                        <div className="text-gray-600 text-sm">
-                          Premium: ${pol.premium_amount}
-                        </div>
-                        <div className="text-gray-600 text-sm">
-                          Effective: {pol.effective_date}
-                        </div>
-                        <div className="text-gray-600 text-sm">
-                          Expires: {pol.expiration_date}
-                        </div>
-                         <button
-                          onClick={() => {
-                            setSelectedPolicy(pol);
-                            setShowEditPolicyModal(true);
-                          }}
-                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-                        >
-                          Edit
-                        </button>
-                        <button
-                        onClick={() => setShowDeletePolicyModal(true)}
-                        className="px-3 py-2 bg-red-600 text-white rounded hover:bg-blue-700"
-                      >
-                        Delete Policy
-                      </button>
-                      </li>
-                    ))}
-                  </ul>
+                 <table className="min-w-full bg-white border border-gray-200 rounded-lg overflow-hidden mt-4">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Type</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Policy #</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Effective</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Expires</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Premium</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Carrier</th>
+                        <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Actions</th>
+                      </tr>
+                    </thead>
+
+                    <tbody className="divide-y divide-gray-200">
+                      {policies.map((pol) => (
+                        <tr key={pol.id} className="hover:bg-gray-50 transition">
+                          <td className="px-4 py-3">
+                            <span
+                              className={`
+                                px-2 py-1 rounded text-xs font-semibold capitalize
+                                ${
+                                  pol.policy_type === "auto"
+                                    ? "bg-blue-100 text-blue-700"
+                                    : pol.policy_type === "home"
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-purple-100 text-purple-700"
+                                }
+                              `}
+                            >
+                              {pol.policy_type}
+                            </span>
+                          </td>
+
+                          <td className="px-4 py-3 font-medium">#{pol.policy_number}</td>
+                          <td className="px-4 py-3">{pol.effective_date}</td>
+                          <td className="px-4 py-3">{pol.expiration_date}</td>
+                          <td className="px-4 py-3">${pol.premium_amount}</td>
+                          <td className="px-4 py-3">{pol.carrier || "—"}</td>
+
+                          {/* ⭐ Actions */}
+                          <td className="px-4 py-3 text-right space-x-3 flex justify-end">
+
+                            {/* Edit */}
+                            <button
+                              onClick={() => {
+                                setSelectedPolicy(pol);
+                                setShowEditPolicyModal(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-800"
+                              title="Edit Policy"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                  d="M11 5h2m-1-1v2m-7 7l4 4m0 0l8-8m-8 8H5m4 0v-4" />
+                              </svg>
+                            </button>
+
+                            {/* Delete */}
+                            <button
+                              onClick={() => {
+                                setSelectedPolicy(pol);
+                                setShowDeletePolicyModal(true);
+                              }}
+                              className="text-red-600 hover:text-red-800"
+                              title="Delete Policy"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3m5 0H6" />
+                              </svg>
+                            </button>
+
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
                 )}
               </div>
             ),
@@ -248,13 +296,14 @@ const updatePolicy = async (updatedData) => {
           onDelete={deleteCustomer}
         />
       )}
-      {showDeleteModal && (
-          <DeletePolicyModal
-            policy={selectedPolicy}
-            onClose={() => setShowDeleteModal(false)}
-            onDelete={deletePolicy}
-          />
+      {showDeletePolicyModal && (
+        <DeletePolicyModal
+          policy={selectedPolicy}
+          onClose={() => setShowDeletePolicyModal(false)}
+          onDelete={deletePolicy}
+        />
       )}
+
       {showEditPolicyModal && (
         <EditPolicyModal
           policy={selectedPolicy}
@@ -263,6 +312,13 @@ const updatePolicy = async (updatedData) => {
         />
       )}
 
+      {showAddPolicyModal && (
+      <AddPolicyModal
+        customerId={id}
+        onClose={() => setShowAddPolicyModal(false)}
+        onSave={addPolicy}
+      />
+    )}
 
     </div>
   );
