@@ -34,6 +34,9 @@ export default function CustomerDetailPage() {
   const [showEditPolicyModal, setShowEditPolicyModal] = useState(false);
   const [showAddPolicyModal, setShowAddPolicyModal] = useState(false);
 
+  const [showAddInvoiceModal, setShowAddInvoiceModal] = useState(false);
+
+
 
   const tabLabels = {
   overview: "Overview",
@@ -263,11 +266,7 @@ const renderPolicyStatus = (status) => {
                               className="text-blue-600 hover:text-blue-800"
                               title="Edit Policy"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5"
-                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M11 5h2m-1-1v2m-7 7l4 4m0 0l8-8m-8 8H5m4 0v-4" />
-                              </svg>
+                              ✏️
                             </button>
 
                             {/* Delete */}
@@ -279,11 +278,7 @@ const renderPolicyStatus = (status) => {
                               className="text-red-600 hover:text-red-800"
                               title="Delete Policy"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5"
-                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3m5 0H6" />
-                              </svg>
+                              🗑
                             </button>
 
                           </td>

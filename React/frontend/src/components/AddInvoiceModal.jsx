@@ -1,6 +1,7 @@
 import { useState } from "react";
+import axios from "axios";
 
-export default function AddInvoiceModal({ policyId, onClose, onSave }) {
+export default function AddInvoiceModal({ policyId, onClose, onCreated }) {
   const [form, setForm] = useState({
     invoice_number: "",
     total_amount: "",
@@ -15,10 +16,23 @@ export default function AddInvoiceModal({ policyId, onClose, onSave }) {
   };
 
   const handleSubmit = async () => {
-    await onSave(form);
-    onClose();
-  };
+  try {
+    await axios.post("http://localhost:8000/api/invoices/", {
+      policy: policyId,
+      invoice_number: form.invoice_number,
+      total_amount: form.total_amount,
+      balance: form.balance,
+      due_date: form.due_date,
+      status: form.status,
+      notes: form.notes,
+    });
 
+    onCreated();
+    onClose();
+  } catch (err) {
+    console.error("Invoice POST failed:", err.response?.data || err);
+  }
+};
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded shadow-lg w-full max-w-lg">

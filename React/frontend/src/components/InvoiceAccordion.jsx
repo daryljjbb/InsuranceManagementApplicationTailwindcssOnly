@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import AddInvoiceModal from "./AddInvoiceModal";
 
 export default function InvoiceAccordion({ policy, customerId }) {
   const [open, setOpen] = useState(false);
   const [invoices, setInvoices] = useState([]);
+  const [showAddInvoiceModal, setShowAddInvoiceModal] = useState(false);
+
 
   const loadInvoices = async () => {
     const res = await axios.get(
@@ -35,10 +38,12 @@ export default function InvoiceAccordion({ policy, customerId }) {
 
           {/* Add Invoice Button */}
           <button
-            className="mb-3 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            + Add Invoice
+            onClick={() => setShowAddInvoiceModal(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+            Add Invoice
           </button>
+
 
           {/* Invoice Table */}
           {invoices.length === 0 ? (
@@ -101,6 +106,16 @@ export default function InvoiceAccordion({ policy, customerId }) {
           )}
         </div>
       )}
+      {showAddInvoiceModal && (
+       <AddInvoiceModal
+        policyId={policy.id}
+        customerId={customerId}
+        onClose={() => setShowAddInvoiceModal(false)}
+        onCreated={() => loadInvoices()}
+        />
+
+        )}
+
     </div>
   );
 }
