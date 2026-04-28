@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import AddCustomerModal from "../components/AddCustomerModal";
-import EditCustomerModal from "../components/EditCustomerModal";
-import DeleteCustomerModal from "../components/DeleteCustomerModal";
+
+
+import EditCustomerModal from "../components/customer/EditCustomerModal";
+import DeleteCustomerModal from "../components/customer/DeleteCustomerModal";
+import AddCustomerModal from "../components/customer/AddCustomerModal";
 
 export default function Customers() {
   const navigate = useNavigate();
@@ -59,6 +62,7 @@ export default function Customers() {
       updatedData
     );
     loadCustomers();
+    toast.success("Customer updated");
   };
 
   // -----------------------------
@@ -70,11 +74,13 @@ export default function Customers() {
     );
     setShowDeleteModal(false);
     loadCustomers();
+    toast.success("Customer deleted");
   };
 
   const addCustomer = async (data) => {
   await axios.post("http://localhost:8000/api/customers/", data);
   loadCustomers();
+    toast.success("Customer created");
 };
 
 

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
-export default function AddPolicyModal({ customerId, onClose, onSave }) {
+export default function EditPolicyModal({ policy, onClose, onSave }) {
   const [form, setForm] = useState({
     policy_type: "",
     policy_number: "",
@@ -9,9 +9,24 @@ export default function AddPolicyModal({ customerId, onClose, onSave }) {
     expiration_date: "",
     premium_amount: "",
     carrier: "",
+    status: "",
   });
 
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (policy) {
+      setForm({
+        policy_type: policy.policy_type || "",
+        policy_number: policy.policy_number || "",
+        effective_date: policy.effective_date || "",
+        expiration_date: policy.expiration_date || "",
+        premium_amount: policy.premium_amount || "",
+        carrier: policy.carrier || "",
+        status: policy.status || "active",
+      });
+    }
+  }, [policy]);
 
   const validate = () => {
     const e = {};
@@ -31,7 +46,7 @@ export default function AddPolicyModal({ customerId, onClose, onSave }) {
     }
 
     await onSave(form);
-    toast.success("Policy created");
+    toast.success("Policy updated");
     onClose();
   };
 
@@ -41,7 +56,7 @@ export default function AddPolicyModal({ customerId, onClose, onSave }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded shadow-lg w-full max-w-xl">
-        <h2 className="text-xl font-bold mb-4">Add Policy</h2>
+        <h2 className="text-xl font-bold mb-4">Edit Policy</h2>
 
         {/* Policy Type */}
         <select
@@ -50,14 +65,10 @@ export default function AddPolicyModal({ customerId, onClose, onSave }) {
           onChange={handleChange}
           className="border rounded px-3 py-2 w-full"
         >
-          <option value="">Select Policy Type</option>
           <option value="auto">Auto</option>
           <option value="home">Home</option>
           <option value="life">Life</option>
         </select>
-        {errors.policy_type && (
-          <p className="text-xs text-red-600">{errors.policy_type}</p>
-        )}
 
         {/* Policy Number */}
         <input
@@ -67,9 +78,6 @@ export default function AddPolicyModal({ customerId, onClose, onSave }) {
           className="border rounded px-3 py-2 w-full mt-3"
           onChange={handleChange}
         />
-        {errors.policy_number && (
-          <p className="text-xs text-red-600">{errors.policy_number}</p>
-        )}
 
         {/* Dates */}
         <div className="grid grid-cols-2 gap-4 mt-3">
@@ -97,9 +105,6 @@ export default function AddPolicyModal({ customerId, onClose, onSave }) {
           className="border rounded px-3 py-2 w-full mt-3"
           onChange={handleChange}
         />
-        {errors.premium_amount && (
-          <p className="text-xs text-red-600">{errors.premium_amount}</p>
-        )}
 
         {/* Carrier */}
         <input
@@ -109,6 +114,18 @@ export default function AddPolicyModal({ customerId, onClose, onSave }) {
           className="border rounded px-3 py-2 w-full mt-3"
           onChange={handleChange}
         />
+
+        {/* Status */}
+        <select
+          name="status"
+          value={form.status}
+          className="border rounded px-3 py-2 w-full mt-4"
+          onChange={handleChange}
+        >
+          <option value="active">Active</option>
+          <option value="expired">Expired</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
 
         {/* Buttons */}
         <div className="flex justify-end mt-6 space-x-2">
@@ -122,7 +139,7 @@ export default function AddPolicyModal({ customerId, onClose, onSave }) {
             onClick={handleSubmit}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            Save Policy
+            Save Changes
           </button>
         </div>
       </div>

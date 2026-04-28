@@ -5,11 +5,14 @@ import Breadcrumbs from "../components/Breadcrumbs";
 import Tabs from "../components/ui/Tabs";
 import { useSearchParams } from "react-router-dom";
 import { Home, Users, User, FileText } from "lucide-react";
-import EditCustomerModal from "../components/EditCustomerModal";
-import DeleteCustomerModal from "../components/DeleteCustomerModal";
-import AddPolicyModal from "../components/AddPolicyModal";
-import DeletePolicyModal from "../components/DeletePolicyModal";
-import EditPolicyModal from "../components/EditPolicyModal";
+
+
+import InvoiceAccordion from "../components/InvoiceAccordion";
+
+import EditPolicyModal from "../components/policies/EditPolicyModal";
+import AddPolicyModal from "../components/policies/AddPolicyModal";
+import DeletePolicyModal from "../components/policies/DeletePolicyModal";
+import RenewalReminderList from "../components/policies/RenewalReminderList";
 
 
 
@@ -35,6 +38,8 @@ export default function CustomerDetailPage() {
   const tabLabels = {
   overview: "Overview",
   policies: "Policies",
+  invoices: "Invoices",
+  renewals: "Renewals",
   notes: "Notes",
 };
 
@@ -68,20 +73,20 @@ useEffect(() => {
   // -----------------------------
   // Load Policies
   // -----------------------------
-  useEffect(() => {
-    const loadPolicies = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:8000/api/customers/${id}/policies/`
-        );
-        setPolicies(response.data);
-      } catch (err) {
-        console.error("Failed to load policies", err);
-      }
-    };
+const loadPolicies = async () => {
+  try {
+    const response = await axios.get(
+      `http://localhost:8000/api/customers/${id}/policies/`
+    );
+    setPolicies(response.data);
+  } catch (err) {
+    console.error("Failed to load policies", err);
+  }
+};
 
-    loadPolicies();
-  }, [id]);
+useEffect(() => {  
+  loadPolicies();
+}, [id]);
 
   const updateCustomer = async (updatedData) => {
   await axios.put(`http://localhost:8000/api/customers/${id}/`, updatedData);
@@ -96,7 +101,7 @@ const deleteCustomer = async () => {
 const deletePolicy = async () => {
   await axios.delete(`http://localhost:8000/api/policies/${selectedPolicy.id}/`);
   setShowDeletePolicyModal(false);
-  loadCustomer(); // refresh policies list
+  await loadPolicies(); // refresh policies list
 };
 
 const addPolicy = async (data) => {
@@ -104,17 +109,37 @@ const addPolicy = async (data) => {
     `http://localhost:8000/api/customers/${id}/policies/`,
     data
   );
-  loadCustomer(); // refresh policies
-};
 
+  await loadPolicies();   // refresh policies instantly
+  setShowAddPolicyModal(false);  // close Add modal
+};
 
 const updatePolicy = async (updatedData) => {
   await axios.put(
     `http://localhost:8000/api/policies/${selectedPolicy.id}/`,
     updatedData
   );
-  loadCustomer(); // refresh policies
+
+  await loadPolicies(); // refresh policies
+  setShowEditPolicyModal(false); // ⭐ close EDIT modal (correct)
 };
+
+
+const renderPolicyStatus = (status) => {
+  const base = "px-2 py-1 rounded-full text-xs font-semibold capitalize";
+
+  switch (status) {
+    case "active":
+      return <span className={`${base} bg-green-100 text-green-700`}>Active</span>;
+    case "expired":
+      return <span className={`${base} bg-red-100 text-red-700`}>Expired</span>;
+    case "cancelled":
+      return <span className={`${base} bg-gray-200 text-gray-700`}>Cancelled</span>;
+    default:
+      return <span className={`${base} bg-blue-100 text-blue-700`}>{status}</span>;
+  }
+};
+
 
 
 
@@ -196,6 +221,7 @@ const updatePolicy = async (updatedData) => {
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Expires</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Premium</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Carrier</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
                         <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Actions</th>
                       </tr>
                     </thead>
@@ -219,13 +245,12 @@ const updatePolicy = async (updatedData) => {
                               {pol.policy_type}
                             </span>
                           </td>
-
                           <td className="px-4 py-3 font-medium">#{pol.policy_number}</td>
                           <td className="px-4 py-3">{pol.effective_date}</td>
                           <td className="px-4 py-3">{pol.expiration_date}</td>
                           <td className="px-4 py-3">${pol.premium_amount}</td>
                           <td className="px-4 py-3">{pol.carrier || "—"}</td>
-
+                          <td className="px-4 py-3">{renderPolicyStatus(pol.status)}</td>
                           {/* ⭐ Actions */}
                           <td className="px-4 py-3 text-right space-x-3 flex justify-end">
 
@@ -272,6 +297,36 @@ const updatePolicy = async (updatedData) => {
             ),
           },
           {
+          key: "invoices",
+          label: "Invoices",
+          content: (
+            <div className="space-y-4">
+
+              {policies.length === 0 ? (
+                <p className="text-gray-600">No policies found, so no invoices can be created.</p>
+              ) : (
+                <div className="space-y-4">
+                  {policies.map((pol) => (
+                    <InvoiceAccordion
+                      key={pol.id}
+                      policy={pol}
+                      customerId={id}
+                    />
+                  ))}
+                </div>
+              )}
+
+            </div>
+          ),
+        },
+        {
+          key: "renewals",
+          label: "Renewal Reminders",
+          content: <RenewalReminderList />
+        },
+
+
+          {
             key: "notes",
             label: "Notes",
             content: (
@@ -282,20 +337,6 @@ const updatePolicy = async (updatedData) => {
           },
         ]}
       />
-      {showEditModal && (
-          <EditCustomerModal
-            customer={customer}
-            onClose={() => setShowEditModal(false)}
-            onSave={updateCustomer}
-          />
-        )}
-      {showDeleteModal && (
-        <DeleteCustomerModal
-          customer={customer}
-          onClose={() => setShowDeleteModal(false)}
-          onDelete={deleteCustomer}
-        />
-      )}
       {showDeletePolicyModal && (
         <DeletePolicyModal
           policy={selectedPolicy}

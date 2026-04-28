@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+// src/components/customers/AddCustomerModal.jsx
+import { useState } from "react";
 
-export default function EditCustomerModal({ customer, onClose, onSave }) {
+export default function AddCustomerModal({ onClose, onSave }) {
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -14,40 +15,31 @@ export default function EditCustomerModal({ customer, onClose, onSave }) {
     state: "",
     zip_code: "",
     notes: "",
-    status: "active",
+    status: "lead",
   });
-
-  // Pre-fill form when modal opens
- useEffect(() => {
-  if (customer) {
-    setForm({
-      first_name: customer.first_name || "",
-      last_name: customer.last_name || "",
-      gender: customer.gender
-        ? customer.gender.charAt(0).toUpperCase() + customer.gender.slice(1).toLowerCase()
-        : "",
-      date_of_birth: customer.date_of_birth
-        ? customer.date_of_birth.substring(0, 10)
-        : "",
-      email: customer.email || "",
-      phone: customer.phone || "",
-      address1: customer.address1 || "",
-      address2: customer.address2 || "",
-      city: customer.city || "",
-      state: customer.state || "",
-      zip_code: customer.zip_code || "",
-      notes: customer.notes || "",
-      status: customer.status || "active",
-    });
-  }
-}, [customer]);
-
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const validate = () => {
+    const newErrors = {};
+    if (!form.first_name.trim()) newErrors.first_name = "First name is required";
+    if (!form.last_name.trim()) newErrors.last_name = "Last name is required";
+    if (!form.email.trim()) newErrors.email = "Email is required";
+    if (form.email && !/\S+@\S+\.\S+/.test(form.email))
+      newErrors.email = "Invalid email format";
+    if (!form.phone.trim()) newErrors.phone = "Phone is required";
+    return newErrors;
+  };
+
   const handleSubmit = async () => {
+    const v = validate();
+    if (Object.keys(v).length > 0) {
+      setErrors(v);
+      return;
+    }
     await onSave(form);
     onClose();
   };
@@ -55,25 +47,34 @@ export default function EditCustomerModal({ customer, onClose, onSave }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded shadow-lg w-full max-w-2xl">
-
-        <h2 className="text-xl font-bold mb-4">Edit Customer</h2>
+        <h2 className="text-xl font-bold mb-4">Add Customer</h2>
 
         {/* Name */}
         <div className="grid grid-cols-2 gap-4">
-          <input
-            name="first_name"
-            value={form.first_name}
-            placeholder="First Name"
-            className="border rounded px-3 py-2 w-full"
-            onChange={handleChange}
-          />
-          <input
-            name="last_name"
-            value={form.last_name}
-            placeholder="Last Name"
-            className="border rounded px-3 py-2 w-full"
-            onChange={handleChange}
-          />
+          <div>
+            <input
+              name="first_name"
+              value={form.first_name}
+              placeholder="First Name"
+              className="border rounded px-3 py-2 w-full"
+              onChange={handleChange}
+            />
+            {errors.first_name && (
+              <p className="text-xs text-red-600 mt-1">{errors.first_name}</p>
+            )}
+          </div>
+          <div>
+            <input
+              name="last_name"
+              value={form.last_name}
+              placeholder="Last Name"
+              className="border rounded px-3 py-2 w-full"
+              onChange={handleChange}
+            />
+            {errors.last_name && (
+              <p className="text-xs text-red-600 mt-1">{errors.last_name}</p>
+            )}
+          </div>
         </div>
 
         {/* Gender + DOB */}
@@ -100,21 +101,31 @@ export default function EditCustomerModal({ customer, onClose, onSave }) {
         </div>
 
         {/* Contact */}
-        <input
-          name="email"
-          value={form.email}
-          placeholder="Email"
-          className="border rounded px-3 py-2 w-full mt-4"
-          onChange={handleChange}
-        />
+        <div className="mt-4">
+          <input
+            name="email"
+            value={form.email}
+            placeholder="Email"
+            className="border rounded px-3 py-2 w-full"
+            onChange={handleChange}
+          />
+          {errors.email && (
+            <p className="text-xs text-red-600 mt-1">{errors.email}</p>
+          )}
+        </div>
 
-        <input
-          name="phone"
-          value={form.phone}
-          placeholder="Phone"
-          className="border rounded px-3 py-2 w-full mt-3"
-          onChange={handleChange}
-        />
+        <div className="mt-3">
+          <input
+            name="phone"
+            value={form.phone}
+            placeholder="Phone"
+            className="border rounded px-3 py-2 w-full"
+            onChange={handleChange}
+          />
+          {errors.phone && (
+            <p className="text-xs text-red-600 mt-1">{errors.phone}</p>
+          )}
+        </div>
 
         {/* Address */}
         <input
@@ -124,7 +135,6 @@ export default function EditCustomerModal({ customer, onClose, onSave }) {
           className="border rounded px-3 py-2 w-full mt-3"
           onChange={handleChange}
         />
-
         <input
           name="address2"
           value={form.address2}
@@ -164,9 +174,9 @@ export default function EditCustomerModal({ customer, onClose, onSave }) {
           className="border rounded px-3 py-2 w-full mt-4"
           onChange={handleChange}
         >
+          <option value="lead">Lead</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
-          <option value="lead">Lead</option>
         </select>
 
         {/* Notes */}
@@ -187,15 +197,13 @@ export default function EditCustomerModal({ customer, onClose, onSave }) {
           >
             Cancel
           </button>
-
           <button
             onClick={handleSubmit}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            Save Changes
+            Save
           </button>
         </div>
-
       </div>
     </div>
   );
