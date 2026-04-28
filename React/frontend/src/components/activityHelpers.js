@@ -67,3 +67,42 @@ export const activityBadge = (action) => {
 
   return <span className={`${base} bg-gray-100 text-gray-700`}>Other</span>;
 };
+
+export const groupActivityByDate = (items) => {
+  const groups = {
+    today: [],
+    yesterday: [],
+    thisWeek: [],
+    older: [],
+  };
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - today.getDay()); // Sunday start
+
+  items.forEach((log) => {
+    const logDate = new Date(log.created_at);
+    const logDay = new Date(
+      logDate.getFullYear(),
+      logDate.getMonth(),
+      logDate.getDate()
+    );
+
+    if (logDay >= today) {
+      groups.today.push(log);
+    } else if (logDay >= yesterday) {
+      groups.yesterday.push(log);
+    } else if (logDay >= weekStart) {
+      groups.thisWeek.push(log);
+    } else {
+      groups.older.push(log);
+    }
+  });
+
+  return groups;
+};
+
