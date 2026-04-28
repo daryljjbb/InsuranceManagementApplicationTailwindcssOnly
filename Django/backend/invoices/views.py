@@ -66,7 +66,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
         log_customer_action(
             "invoice_created",
-            invoice.customer,
+            invoice.policy.customer,   # FIXED
             f"Invoice #{invoice.id} was created."
         )
 
@@ -76,7 +76,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
         log_customer_action(
             "invoice_updated",
-            invoice.customer,
+            invoice.policy.customer,   # FIXED
             f"Invoice #{invoice.id} was updated."
         )
 
@@ -84,7 +84,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def perform_destroy(self, instance):
         log_customer_action(
             "invoice_deleted",
-            instance.customer,
+            instance.policy.customer,  # FIXED
             f"Invoice #{instance.id} was deleted."
         )
 
