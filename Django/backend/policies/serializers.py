@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Policy, RenewalReminder
+from .models import Policy
 
 class PolicySerializer(serializers.ModelSerializer):
     class Meta:
@@ -7,9 +7,5 @@ class PolicySerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["customer"]
     
-class RenewalReminderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RenewalReminder
-        fields = "__all__"
 
 

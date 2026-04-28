@@ -4,8 +4,8 @@ from rest_framework.decorators import api_view
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Policy, RenewalReminder
-from .serializers import PolicySerializer, RenewalReminderSerializer
+from .models import Policy
+from .serializers import PolicySerializer
 from customers.models import Customer
 from activity.utils import log_policy_action
 from django.shortcuts import get_object_or_404
@@ -76,15 +76,3 @@ class PolicyViewSet(viewsets.ModelViewSet):
 
         instance.delete()
 
-class RenewalReminderView(APIView):
-    def get(self, request):
-        reminders = RenewalReminder.objects.filter(acknowledged=False)
-        serializer = RenewalReminderSerializer(reminders, many=True)
-        return Response(serializer.data)
-
-class AcknowledgeReminderView(APIView):
-    def post(self, request, reminder_id):
-        reminder = RenewalReminder.objects.get(id=reminder_id)
-        reminder.acknowledged = True
-        reminder.save()
-        return Response({"message": "Reminder acknowledged"})

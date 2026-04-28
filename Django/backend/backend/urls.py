@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from renewals.views import CustomerRenewalReminderView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -25,6 +26,13 @@ urlpatterns = [
     path("api/", include("invoices.urls")),
     path("api/", include("activity.urls")),
     path("api/", include("dashboard.urls")),
+    path("api/renewals/", include("renewals.urls")),
+
+    path(
+        "api/customers/<int:customer_id>/renewal-reminders/",
+        CustomerRenewalReminderView.as_view(),
+        name="customer-renewal-reminders"
+    )
 
 
 ]

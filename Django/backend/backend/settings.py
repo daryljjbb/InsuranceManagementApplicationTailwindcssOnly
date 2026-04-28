@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'invoices',
     'policies',
     'customers',
+    'renewals',
     'rest_framework',
     'corsheaders',
     'django_filters',
