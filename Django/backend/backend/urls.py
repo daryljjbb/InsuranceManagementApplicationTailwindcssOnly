@@ -27,12 +27,16 @@ urlpatterns = [
     path("api/", include("activity.urls")),
     path("api/", include("dashboard.urls")),
     path("api/renewals/", include("renewals.urls")),
+    path("api/", include("payments.urls")),
+
 
     path(
         "api/customers/<int:customer_id>/renewal-reminders/",
         CustomerRenewalReminderView.as_view(),
         name="customer-renewal-reminders"
     )
+
+
 
 
 ]

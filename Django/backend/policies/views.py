@@ -76,3 +76,13 @@ class PolicyViewSet(viewsets.ModelViewSet):
 
         instance.delete()
 
+    def get_queryset(self):
+        queryset = Policy.objects.all()
+
+        customer_id = self.request.query_params.get("customer")
+        if customer_id:
+            queryset = queryset.filter(customer_id=customer_id)
+
+        return queryset
+
+

@@ -4,13 +4,11 @@ from rest_framework.response import Response
 from customers.models import Customer
 from policies.models import Policy
 from django.utils import timezone
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from customers.models import Customer
 from policies.models import Policy
 from renewals.models import RenewalReminder
-from django.utils import timezone
 from datetime import timedelta
 
 class DashboardSummaryView(APIView):

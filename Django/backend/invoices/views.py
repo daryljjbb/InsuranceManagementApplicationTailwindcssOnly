@@ -5,7 +5,9 @@ from rest_framework import status, viewsets, permissions
 from .models import Invoice
 from .serializers import InvoiceSerializer
 from customers.models import Customer
-from activity.utils import log_customer_action
+from activity.utils import log_invoice_action, log_customer_action, log_payment_action
+from payments.models import Payment
+from payments.serializers import PaymentSerializer
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
 
@@ -60,32 +62,45 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all().order_by("-id")
     serializer_class = InvoiceSerializer
 
-    # CREATE
     def perform_create(self, serializer):
         invoice = serializer.save()
 
-        log_customer_action(
+        # Set initial balance equal to total amount
+        invoice.balance = invoice.total_amount
+        invoice.save()
+
+        log_invoice_action(
             "invoice_created",
-            invoice.policy.customer,   # FIXED
-            f"Invoice #{invoice.id} was created."
+            invoice,
+            f"Invoice #{invoice.invoice_number} was created."
         )
 
-    # UPDATE
+
     def perform_update(self, serializer):
         invoice = serializer.save()
 
-        log_customer_action(
+        log_invoice_action(
             "invoice_updated",
-            invoice.policy.customer,   # FIXED
-            f"Invoice #{invoice.id} was updated."
+            invoice,
+            f"Invoice #{invoice.invoice_number} was updated."
         )
 
-    # DELETE
     def perform_destroy(self, instance):
-        log_customer_action(
+        log_invoice_action(
             "invoice_deleted",
-            instance.policy.customer,  # FIXED
-            f"Invoice #{instance.id} was deleted."
+            instance,
+            f"Invoice #{instance.invoice_number} was deleted."
         )
 
         instance.delete()
+
+    def get_queryset(self):
+        queryset = Invoice.objects.all()
+
+        policy_id = self.request.query_params.get("policy")
+        if policy_id:
+            queryset = queryset.filter(policy_id=policy_id)
+
+        return queryset
+
+
