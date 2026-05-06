@@ -37,6 +37,9 @@ export default function Customers() {
 
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
+  const [isLeaving, setIsLeaving] = useState(false);
+
+
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -172,7 +175,7 @@ const sortIcon = (field) => {
   if (loading) return <h2 className="text-xl">Loading customers...</h2>;
 
   return (
-    <div>
+    <div className={isLeaving ? "animate-fadeOut" : "animate-fadeIn"}>
       <h1 className="text-2xl font-bold mb-6">Customers</h1>
 
       {/* ADD BUTTON */}
@@ -258,10 +261,15 @@ const sortIcon = (field) => {
             {customers.map((cust) => (
              <tr
               key={cust.id}
-              onClick={() => {
+             onClick={() => {
                 setSelectedRow(cust.id);
-                navigate(`/customers/${cust.id}`);
+                setIsLeaving(true);
+
+                setTimeout(() => {
+                  navigate(`/customers/${cust.id}`);
+                }, 250); // match fadeOut duration
               }}
+
               className={`
                 cursor-pointer
                 transition-colors duration-200

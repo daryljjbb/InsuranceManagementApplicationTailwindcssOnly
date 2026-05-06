@@ -4,6 +4,7 @@ import axios from "axios";
 import Modal from "../components/Modal";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { safeArray } from "../utils/apiHelpers";
+import CustomerDocumentsTab from "../components/CustomerDocumentsTab";
 
 
 export default function CustomerDetail() {
@@ -12,6 +13,7 @@ export default function CustomerDetail() {
   const [customer, setCustomer] = useState(null);
   const [policies, setPolicies] = useState([]);
   const [loading, setLoading] = useState(true);
+ const [isLeaving, setIsLeaving] = useState(false);
 
   const [openAddPolicy, setOpenAddPolicy] = useState(false);
  const [policyData, setPolicyData] = useState({
@@ -57,81 +59,118 @@ export default function CustomerDetail() {
   }
 };
 
+const [activeTab, setActiveTab] = useState("overview");
+
+
   if (loading) return <h2>Loading...</h2>;
 
   return (
-    <div className="animate-[fadeIn_0.6s_ease-out]">
+    <div className="animate-slideIn">
       <Breadcrumbs
         items={[
           { label: "Customers", to: "/customers" },
           { label: customer.name }
         ]}
       />
-
-
-      <h1 className="text-2xl font-bold mb-4">
-        {customer.first_name} {customer.last_name}
-      </h1>
-
-      <p>Email: {customer.email}</p>
-      <p>Phone: {customer.phone}</p>
-
-      <hr className="my-6" />
-
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Policies</h2>
-        <button
-          onClick={() => setOpenAddPolicy(true)}
-          className="px-3 py-1 bg-green-600 text-white rounded"
-        >
-          + Add Policy
-        </button>
+      <div className="border-b border-gray-200 mb-6">
+        <nav className="-mb-px flex space-x-8">
+          {[
+            { key: "overview", label: "Overview" },
+            { key: "policies", label: "Policies" },
+            { key: "documents", label: "Documents" }
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`
+                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition
+                ${
+                  activeTab === tab.key
+                    ? "border-blue-600 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }
+              `}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
-      <div className="bg-white shadow rounded animate-fadeIn">
-        <table className="w-full">
-          <thead className="bg-gray-100">
-            <tr>
-                <th className="p-3 text-center">Policy #</th>
-                <th className="p-3 text-center">Type</th>
-                <th className="p-3 text-center">Premium</th>
-                <th className="p-3 text-center">Actions</th>
-            </tr>
-          </thead>
+      {activeTab === "overview" && (
+        <div className="animate-fadeIn">
+          <h1 className="text-2xl font-bold mb-4">
+            {customer.first_name} {customer.last_name}
+          </h1>
 
-        <tbody className="animate-fadeIn">
-            {Array.isArray(policies) && policies.length > 0 ? (
-              policies.map((p, index) => (
-                <tr
-                    key={p.id}
-                    className="border-b hover:bg-gray-50 opacity-0 animate-[fadeIn_0.35s_ease-out_forwards]"
-                    style={{ animationDelay: `${index * 60}ms` }}
+          <p>Email: {customer.email}</p>
+          <p>Phone: {customer.phone}</p>
+        </div>
+      )}
+
+      {activeTab === "policies" && (
+  <div className="animate-fadeIn">
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="text-xl font-bold">Policies</h2>
+      <button
+        onClick={() => setOpenAddPolicy(true)}
+        className="px-3 py-1 bg-green-600 text-white rounded"
+      >
+        + Add Policy
+      </button>
+    </div>
+
+    <div className="bg-white shadow rounded">
+      <table className="w-full">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="p-3 text-center">Policy #</th>
+            <th className="p-3 text-center">Type</th>
+            <th className="p-3 text-center">Premium</th>
+            <th className="p-3 text-center">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {policies.length > 0 ? (
+            policies.map((p, index) => (
+              <tr
+                key={p.id}
+                className="border-b hover:bg-gray-50 opacity-0 animate-[fadeIn_0.35s_ease-out_forwards]"
+                style={{ animationDelay: `${index * 60}ms` }}
+              >
+                <td className="p-3 text-center">{p.policy_number}</td>
+                <td className="p-3 text-center">{p.policy_type}</td>
+                <td className="p-3 text-center">${p.premium_amount}</td>
+                <td className="p-3 text-center">
+                  <button
+                    onClick={() => navigate(`/policy/${p.id}`)}
+                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
                   >
-
-                  <td className="p-3 text-center">{p.policy_number}</td>
-                  <td className="p-3 text-center">{p.policy_type}</td>
-                  <td className="p-3 text-center">${p.premium_amount}</td>
-                  <td className="p-3 text-center">
-                    <button
-                      onClick={() => navigate(`/policy/${p.id}`)}
-                      className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                      View Policy
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" className="p-4 text-center text-gray-500">
-                  No policies found for this customer.
+                    View Policy
+                  </button>
                 </td>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="4" className="p-4 text-center text-gray-500">
+                No policies found for this customer.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+{activeTab === "documents" && (
+  <CustomerDocumentsTab customerId={customer.id} />
+)}
 
+
+
+        
       {/* ADD POLICY MODAL */}
       <Modal open={openAddPolicy} onClose={() => setOpenAddPolicy(false)}>
         <h2 className="text-xl font-bold mb-4">Add Policy</h2>
