@@ -5,7 +5,6 @@ import Breadcrumbs from "../components/Breadcrumbs";
 import Modal from "../components/Modal";
 import { safeArray } from "../utils/apiHelpers";
 import PolicyInvoicesTab from "../components/PolicyInvoicesTab";
-import PolicyDocumentsTab from "../components/PolicyDocumentsTab";
 import CurrencyInput from "../components/CurrrencyInput";
 
 export default function PolicyDetail() {
@@ -111,7 +110,6 @@ export default function PolicyDetail() {
           {[
             { key: "overview", label: "Overview" },
             { key: "invoices", label: "Invoices" },
-            { key: "documents", label: "Documents" },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -166,12 +164,7 @@ export default function PolicyDetail() {
         />
       )}
 
-      {/* ----------------------------- */}
-      {/* DOCUMENTS TAB */}
-      {/* ----------------------------- */}
-      {activeTab === "documents" && (
-        <PolicyDocumentsTab policyId={policy.id} />
-      )}
+     
 
       {/* ----------------------------- */}
       {/* ADD INVOICE MODAL */}

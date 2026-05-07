@@ -6,7 +6,6 @@ export default function UploadDocumentModal({
   show,
   onHide,
   customerId,
-  policyId,
   onUploaded
 }) {
   const [file, setFile] = useState(null);
@@ -17,9 +16,8 @@ export default function UploadDocumentModal({
     const formData = new FormData();
     formData.append("file", file);
 
-    // Attach the correct foreign key
-    if (customerId) formData.append("customer", customerId);
-    if (policyId) formData.append("policy", policyId);
+    // ALWAYS attach customer — Option A
+    formData.append("customer", customerId);
 
     try {
       await axios.post("http://localhost:8000/api/documents/", formData, {
